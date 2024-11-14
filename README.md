@@ -1,1 +1,1 @@
-# DGS_EXR
+# Dynamic Global Sourcing under Exchange Rate Risks
