@@ -18,9 +18,28 @@ gen num=1
 collapse (sum) value_firm_imp=value (count) num_cty=num, by(party_id year)
 collapse (mean) num_cty, by(party_id)
 keep if num_cty>1
-hist num_cty, width(1) start(1) frequency ytitle(Number of firms) xtitle(Average number of sources per firm) 
+hist num_cty, width(1) start(1) ytitle(Percentage of firms) xtitle(Average number of sources per firm) 
 *kdensity kdenopts(width(0.5))
 graph export figures\import_distribution_firm.png, as(png) replace
+
+*-------------------------------------------------------------------------------
+
+* 2. Overall trend of global sourcing
+
+cd "D:\Project G"
+use samples\samples_0015_imp_firm_num,clear
+
+gen imp=1 if imp_f>0
+replace imp=0 if imp_f==0
+collapse (sum) imp imp_f, by(year)
+gen num_cty_f=imp_f/imp
+merge 1:1 year using ER\PWT_CHN,nogen keep(matched)
+replace rgdpna=rgdpna/1000
+sort year
+
+twoway (line imp year, legend(label(1 "Importing firms"))) (line rgdpna year, legend(label(2 "Real GDP")) yaxis(2)), ytitle(Number of importing firms) ytitle(Real GDP in billion USD, axis(2))
+
+twoway (bar num_cty_f year), ytitle(Number of importing firms)
 
 *-------------------------------------------------------------------------------
 
@@ -37,9 +56,9 @@ use samples\samples_0015_imp_cty_num,clear
 
 preserve
 collapse (mean) entry_c exit_c imp_c, by(countrycode year)
-gen lnentry_c=ln(entry_c)
-gen lnexit_c=ln(exit_c)
-twoway (scatter lnentry_c lnexit_c, legend(label(1 "Years")) msize(vsmall)) (lfit lnentry_c lnexit_c), ytitle(Average log number of firm entries per market) xtitle(Average log number of firm exits per market)
+gen lgentry_c=log10(entry_c)
+gen lgexit_c=log10(exit_c)
+twoway (scatter lgentry_c lgexit_c, legend(label(1 "Country-Year pairs")) msize(vsmall)) (lfit lgentry_c lgexit_c), ytitle(Average (log10) number of firm entries per market) xtitle(Average (log10) number of firm exits per market)
 graph export figures\corr_entry_exit_cty_year.png, as(png) replace
 restore
 

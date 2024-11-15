@@ -21,9 +21,12 @@ esttab imp_static_* using tables\import_static.csv, replace b(3) se(3) noconstan
 
 ** Probability of importing (dynamic panel)
 
-eststo imp_dynamic_LPM: reghdfe imp_fc dlnRER dlnrgdp l.imp_fc $gravity $firm_control i.year, a(party_id) vce(cluster party_id)
-eststo imp_dynamic_probit: probit imp_fc dlnRER dlnrgdp l.imp_fc $gravity $firm_control i.year, vce(cluster party_id)
-eststo imp_dynamic_logit: logit imp_fc dlnRER dlnrgdp l.imp_fc $gravity $firm_control i.year, vce(cluster party_id)
+eststo imp_lag_LPM: reghdfe imp_fc dlnRER dlnrgdp l.imp_fc $gravity $firm_control i.year, a(party_id) vce(cluster party_id)
+eststo imp_lag_probit: probit imp_fc dlnRER dlnrgdp l.imp_fc $gravity $firm_control i.year, vce(cluster party_id)
+eststo imp_lag_logit: logit imp_fc dlnRER dlnrgdp l.imp_fc $gravity $firm_control i.year, vce(cluster party_id)
+
+eststo imp_dynamic_probit: xtprobit imp_fc dlnRER dlnrgdp l.imp_fc $gravity $firm_control i.year, re vce(r)
+eststo imp_dynamic_logit: xtlogit imp_fc dlnRER dlnrgdp l.imp_fc $gravity $firm_control i.year, re vce(r)
 eststo imp_dynamic_ab: xtabond imp_fc dlnRER dlnrgdp g_distw diplo_dis wto rta gdpcap $firm_control, lags(1) vce(robust)
 eststo imp_dynamic_sys: xtdpdsys imp_fc dlnRER dlnrgdp g_distw diplo_dis wto rta gdpcap $firm_control, lags(1) vce(robust)
 

@@ -20,3 +20,9 @@ replace dev_large=1 if dlnRER<-0.2
 gen rev_large=0
 replace rev_large=1 if dlnRER>0.2
 save RER_99_19_dev,replace
+
+* Macro Trend of China
+cd "D:\Project G\ER"
+use PWT1001_80_19,clear
+keep if countrycode=="CHN"
+save PWT_CHN,replace
