@@ -57,3 +57,13 @@ eststo exit_logit: logit exit_fc dlnRER dlnrgdp $gravity $firm_control i.year if
 
 estfe exit_*, labels(i.year "Year FE")
 esttab exit_* using tables\import_exit.csv, replace b(3) se(3) noconstant star(* 0.1 ** 0.05 *** 0.01) indicate("Year FE =*.year") compress nogaps mtitle("LPM" "Probit" "Logit")
+
+*-------------------------------------------------------------------------------
+
+* 3. Switch
+
+cd "D:\Project G"
+use samples\samples_0015_imp_firm_ext,clear
+
+reghdfe imp_fc dlnRER dlnRER_other dlnrgdp $gravity $firm_control i.year, a(party_id) vce(cluster party_id)
+probit imp_fc dlnRER dlnRER_other dlnrgdp $gravity $firm_control i.year, vce(cluster party_id)

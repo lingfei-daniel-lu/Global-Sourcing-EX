@@ -140,6 +140,7 @@ xtset group_id year
 by group_id: replace age_imp=age_imp[_n-1] if age_imp==. & age_imp[_n-1]!=.
 by group_id: replace age_imp=0 if age_imp==.
 replace value=0 if value==.
+xtset group_id year
 save customs_0015\imp\customs_0015_imp_firm_cty_balanced,replace
 
 *-------------------------------------------------------------------------------
@@ -161,6 +162,8 @@ foreach i of global status{
 }
 ** Add firm-level controls
 merge n:1 party_id year using customs_0015\imp\customs_0015_imp_firm,nogen keep(matched master)
+replace value_f_imp=0 if value_f_imp==.
+replace num_cty_imp=0 if num_cty_imp==.
 gen lnvalue_f_imp=ln(value_f_imp)
 replace lnvalue_f_imp=0 if lnvalue_f_imp==.
 gen lnnum_cty_imp=ln(num_cty_imp)
@@ -169,8 +172,19 @@ replace lnnum_cty_imp=0 if lnnum_cty_imp==.
 egen cty_id=group(countrycode)
 merge n:1 countrycode year using ER\RER_99_19_dev,nogen keep(matched) keepus(dlnNER dlnRER dlnrgdp lnrgdp dev_large rev_large)
 merge n:1 countrycode year using gravity\gravity_CHN_imp,nogen keep(matched)
+** Construct firm-specific exchange rate shocks
+bys party_id year: gen value_f_pc=value/value_f_imp
+xtset group_id year
+gen value_f_pc_lag=l.value_f_pc
+sort party_id year countrycode
+by party_id year: egen dlnIMFEER=sum(value_f_pc_lag*dlnRER)
+gen dlnRER_other=dlnIMFEER-dlnRER*value_f_pc_lag
+replace dlnRER_other=0 if dlnRER_other==.
+drop value_f_pc*
 xtset group_id year
 save samples\samples_0015_imp_firm_ext,replace
+
+*-------------------------------------------------------------------------------
 
 * Country-level numbers of entry and exit
 
@@ -184,7 +198,8 @@ save samples\samples_0015_imp_cty_num,replace
 
 cd "D:\Project G"
 use samples\samples_0015_imp_firm_ext,clear
-collapse (sum) entry_f=entry_fc exit_f=exit_fc imp_f=imp_fc, by(party_id year $firm_control)
+collapse (sum) entry_f=entry_fc exit_f=exit_fc imp_f=imp_fc, by(party_id year value_f_imp num_cty_imp)
 gen switch_f=entry_f+exit_f
 merge n:1 year using ER\US_NER_99_19,nogen keep(matched) keepus(NER_US dlnNER_US)
+sort party_id year
 save samples\samples_0015_imp_firm_num,replace
