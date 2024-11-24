@@ -23,7 +23,6 @@ graph export figures\import_distribution_firm.png, as(png) replace
 
 cd "D:\Project G"
 use customs_0015\imp\customs_0015_imp_firm_cty_top50,clear
-keep if year==2007
 collapse (sum) value_f_imp=value (count) num_cty=num, by(party_id year)
 xtile size_q = value_f_imp, nq(20)
 collapse (mean) num_cty, by(size_q)
